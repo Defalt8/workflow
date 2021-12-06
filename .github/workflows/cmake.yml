@@ -15,32 +15,44 @@ env:
   CMAKE_BUILD_TESTS: ON
 
 jobs:
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout Repo
+      uses: actions/checkout@v2
 
     - name: Get Latest CMake
-      run: sudo apt-get install -y cmake ninja-build
-
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      # run: cmake -B ${{github.workspace}}/build 
-      run: ./build
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build
 
     - name: Build
-      # Build your program with the given configuration
-      # run: cmake --build "${{env.CMAKE_BUILD_DIR}}" --config ${{env.CMAKE_CONFIG}}
       run: ./build
 
+    # - name: Install
+    #   run: ./build install
+
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.  
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      working-directory: ${{env.CMAKE_BUILD_DIR}}
+      run: ctest -C ${{env.CMAKE_CONFIG}}
+      
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+
+    - name: Get Latest CMake
+      run: choco install cmake
+
+    - name: Build
+      run: ./build
+
+    # - name: Install
+    #   run: ./build install
+
+    - name: Test
+      working-directory: ${{env.CMAKE_BUILD_DIR}}
       run: ctest -C ${{env.CMAKE_CONFIG}}
       
